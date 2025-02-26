@@ -58,8 +58,36 @@ kubectl describe -n kube-system <name>
 kubectl create ns <name>
 ```
 
-## Kubernetes Glossaire (Simplified)
+## Deploy an app
 
+```bash
+kubectl create deployment kubernetes-bootcamp --image=gcr.io/google-samples/kubernetes-bootcamp:v1
+```
+
+```bash
+kubectl get deployments
+```
+
+## Run proxy
+
+```bash
+kubectl proxy
+```
+
+## Get the Pod name and access it via the proxy
+
+```bash
+export POD_NAME=$(kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
+echo Name of the Pod: $POD_NAME
+```
+
+## Access the Pod through the proxy
+
+```bash
+curl http://localhost:8001/api/v1/namespaces/default/pods/$POD_NAME:8080/proxy/
+```
+
+## Kubernetes Glossaire (Simplified)
 - Kubernetes Control Plane : c'est un peu le cerveau du cluster, il contient des services vitaux pour notre cluster. Sans lui, on passe un très mauvais quart d'heure.  
 - CoreDNS : DNS pour kubernetes, permet de résoudre addresses et url au sein du cluster.  
 - Namespaces : abstraction logique dans kubernetes, qui vous permet d'organiser vos applications.  
