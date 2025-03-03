@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: serverweb
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        ports:
+        - containerPort: 80
+        image: nginx:latest
+        envFrom:
+        - configMapRef:
+            name: nginx-cm
+        - secretRef:
+            name: nginx-secret

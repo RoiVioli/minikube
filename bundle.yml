@@ -1,0 +1,88 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: serverweb
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nginx-secret
+  namespace: serverweb
+type: Opaque
+data:
+  DB_URL: "bXlzcWw6Ly88dXNlcj46PHBhc3N3b3JkPkA8aG9zdD46PHBvcnQ+LzxkYXRhYmFzZT4/PG9wdGlvbnM+"
+---
+apiVersion: v1
+kind: ConfigMap 
+metadata: 
+  name: nginx-cm
+  namespace: serverweb
+data:
+  APP_ENV: "PRODUCTION"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-svc
+  namespace: serverweb
+spec: 
+  selector:
+    app: nginx
+  ports: 
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP 
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: serverweb
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        ports:
+        - containerPort: 80
+        image: nginx:latest
+        envFrom:
+        - configMapRef:
+            name: nginx-cm
+        - secretRef:
+            name: nginx-secret
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+  namespace: serverweb
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - simplesrv.oclock.lan
+  rules:
+  - host: simplesrv.oclock.lan
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-svc
+            port:
+              number: 80
